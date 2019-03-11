@@ -7,9 +7,8 @@ This file is part of warc
 :copyright: (c) 2012 Internet Archive
 """
 
-from UserDict import DictMixin
 
-class CaseInsensitiveDict(DictMixin):
+class CaseInsensitiveDict(dict):
     """Almost like a dictionary, but keys are case-insensitive.
     
         >>> d = CaseInsensitiveDict(foo=1, Bar=2)
@@ -21,26 +20,24 @@ class CaseInsensitiveDict(DictMixin):
         >>> d['FOO']
         11
         >>> d.keys()
-        ["foo", "bar"]
+        dict_keys(['foo', 'bar'])
     """
-    def __init__(self, mapping=None, **kwargs):
-        self._d = {}
-        self.update(mapping, **kwargs)
-        
+    def __init__(self, **kwargs):
+        lower_keys = {k.lower(): v for k, v in kwargs.items()}
+        super().__init__(**lower_keys)
+
     def __setitem__(self, name, value):
-        self._d[name.lower()] = value
+        super().__setitem__(name.lower(), value)
     
     def __getitem__(self, name):
-        return self._d[name.lower()]
+        return super().__getitem__(name.lower())
         
     def __delitem__(self, name):
-        del self._d[name.lower()]
+        super().__delitem__(name.lower())
         
     def __eq__(self, other):
-        return isinstance(other, CaseInsensitiveDict) and other._d == self._d
-        
-    def keys(self):
-        return self._d.keys()
+        return isinstance(other, CaseInsensitiveDict)
+
 
 class FilePart:
     """File interface over a part of file.

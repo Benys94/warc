@@ -22,13 +22,11 @@ def open(filename, mode="rb", compresslevel=9):
 class GzipFile(BaseGzipFile):
     """GzipFile with support for multi-member gzip files.
     """
-    def __init__(self, filename=None, mode=None, 
-                 compresslevel=9, fileobj=None):
-        BaseGzipFile.__init__(self, 
-            filename=filename, 
-            mode=mode,
-            compresslevel=compresslevel,
-            fileobj=fileobj)
+    def __init__(self, filename=None, mode=None, compresslevel=9, fileobj=None):
+        BaseGzipFile.__init__(
+            self, filename=filename, mode=mode,
+            compresslevel=compresslevel, fileobj=fileobj
+        )
             
         if self.mode == WRITE:
             # Indicates the start of a new member if value is True.
@@ -38,6 +36,7 @@ class GzipFile(BaseGzipFile):
             
         # When _member_lock is True, only one member in gzip file is read
         self._member_lock = False
+        self.size = 0
     
     def close_member(self):
         """Closes the current member being written.
@@ -49,13 +48,11 @@ class GzipFile(BaseGzipFile):
         self.fileobj.write(self.compress.flush())
         write32u(self.fileobj, self.crc)
         # self.size may exceed 2GB, or even 4GB
-        write32u(self.fileobj, self.size & 0xffffffffL)
+        write32u(self.fileobj, self.size & 0xffffffff)
         self.size = 0
-        self.compress = zlib.compressobj(9,
-                                         zlib.DEFLATED,
-                                         -zlib.MAX_WBITS,
-                                         zlib.DEF_MEM_LEVEL,
-                                         0)
+        self.compress = zlib.compressobj(
+            9, zlib.DEFLATED, -zlib.MAX_WBITS, zlib.DEF_MEM_LEVEL, 0
+        )
         self._new_member = True
         
     def _start_member(self):
@@ -113,7 +110,7 @@ class GzipFile(BaseGzipFile):
         
         The data can be a string, an iterator that gives strings or a file-like object.
         """
-        if isinstance(data, basestring):
+        if isinstance(data, str):
             self.write(data)
         else:
             for text in data:
