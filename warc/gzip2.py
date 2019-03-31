@@ -14,10 +14,12 @@ This library provides support for creating and reading multi-member gzip files.
 from gzip import WRITE, READ, write32u, GzipFile as BaseGzipFile
 import zlib
 
+
 def open(filename, mode="rb", compresslevel=9):
     """Shorthand for GzipFile(filename, mode, compresslevel).
     """
     return GzipFile(filename, mode, compresslevel)
+
 
 class GzipFile(BaseGzipFile):
     """GzipFile with support for multi-member gzip files.
@@ -27,12 +29,11 @@ class GzipFile(BaseGzipFile):
             self, filename=filename, mode=mode,
             compresslevel=compresslevel, fileobj=fileobj
         )
-            
-        if self.mode == WRITE:
-            # Indicates the start of a new member if value is True.
-            # The BaseGzipFile constructor already wrote the header for new 
-            # member, so marking as False.
-            self._new_member = False
+
+        # Indicates the start of a new member if value is True.
+        # The BaseGzipFile constructor already wrote the header for new
+        # member, so marking as False.
+        self._new_member = True if self.mode == WRITE else False
             
         # When _member_lock is True, only one member in gzip file is read
         self._member_lock = False
